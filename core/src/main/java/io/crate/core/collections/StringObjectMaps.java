@@ -24,6 +24,7 @@ package io.crate.core.collections;
 import io.crate.core.StringUtils;
 import org.elasticsearch.common.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,5 +63,36 @@ public class StringObjectMaps {
             }
         }
         return tmp;
+    }
+
+    public static void mergeInto(Map<String, Object> source, String key, List<String> path, Object value) {
+        if (path.isEmpty()) {
+            source.put(key, value);
+        } else {
+            // TODO: Make this non-recursive?
+            if (source.containsKey(key)) {
+                Map<String, Object> contents = (Map<String, Object>) source.get(key);
+                String nextKey = path.get(0);
+                mergeInto(contents, nextKey, path.subList(1, path.size()), value);
+            } else {
+                source.put(key, nestedMaps(path, value));
+            }
+        }
+    }
+
+    private static Map<String, Object> nestedMaps(List<String> path, Object value) {
+        final HashMap<String, Object> root = new HashMap<>(1);
+        HashMap<String, Object> m = root;
+        for (int i = 0; i < path.size(); i++) {
+            String key = path.get(i);
+            if (i + 1 == path.size()) {
+                m.put(key, value);
+            } else {
+                HashMap<String, Object> nextChild = new HashMap<>(1);
+                m.put(key, nextChild);
+                m = nextChild;
+            }
+        }
+        return root;
     }
 }
