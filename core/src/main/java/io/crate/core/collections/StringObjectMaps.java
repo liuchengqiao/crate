@@ -37,16 +37,17 @@ public final class StringObjectMaps {
     }
 
     @Nullable
-    public static Object getByPath(Map value, List<String> path) {
+    public static Object getByPath(Map<String, Object> value, List<String> path) {
         assert path instanceof RandomAccess : "Path must support random access for fast iteration";
-        Map map = value;
+        Map<String, Object> map = value;
         for (int i = 0; i < path.size(); i++) {
             String key = path.get(i);
             Object val = map.get(key);
             if (i + 1 == path.size()) {
                 return val;
             } else if (val instanceof Map) {
-                map = (Map) val;
+                //noinspection unchecked
+                map = (Map<String, Object>) val;
             } else {
                 return null;
             }
